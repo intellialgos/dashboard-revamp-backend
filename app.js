@@ -35,9 +35,22 @@ await app.register(fastifySession, {
   saveUninitialized: false, // Only save sessions with data
 });
 
+const allowedOriginis = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "http://94.207.250.168:3000",
+  "http://151.106.108.7:5000",
+  "https://151.106.108.7:5000",
+  "https://aec0371aa383.ngrok.app",
+  "https://3.6.115.64",
+  "http://94.202.132.68:3000",
+  "http://94.202.132.68",
+  "http://localhost:5001"
+]
+
 // CORS
 app.register(cors, {
-  origin: ["http://localhost:3000", "http://127.0.0.1:3000", "http://94.207.250.168:3000", "http://151.106.108.7:5000", "https://151.106.108.7:5000", "https://aec0371aa383.ngrok.app", "https://3.6.115.64", "http://3.6.115.64"], // Valid origins
+  origin: allowedOriginis,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Include OPTIONS for preflight requests
   allowedHeaders: ["Content-Type", "Authorization"], // Headers allowed in the request
   credentials: true, // Allow cookies and credentials

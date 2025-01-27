@@ -1,5 +1,6 @@
 import axiosInstance from "../../config/axios.js";
 import { ENDPOINTS } from "../../config/endpoints.js";
+import { sitesFilter } from "../../utils/siteFilter.js";
 
 export const orgRoutes = async (app) => {
     // Get Organizations & Sites & Groups
@@ -41,6 +42,8 @@ export const orgRoutes = async (app) => {
     app.get('/sites', async (request, reply) => {
       try {
         var sites = [];
+        var sites_filter = await sitesFilter(request);
+
         const requestData = {
           msgType: ENDPOINTS.GET_ORGANIZATIONS,
         };
@@ -53,7 +56,8 @@ export const orgRoutes = async (app) => {
         if ( response?.data && response.data?.error == 0 ) {
           response.data.orgs.map( org => {
             if ( org.sites ) {
-              sites = [...sites, ...org.sites];
+              const filteredSites = (sites_filter.length > 0) ? org.sites.filter(item => sites_filter.includes(item.id)) : org.sites;
+              sites = [...sites, ...filteredSites];
             }
           })
         }
