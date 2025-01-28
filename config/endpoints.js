@@ -21,4 +21,5 @@ export const ENDPOINTS = {
     UPGRADE_BOX_FIRMWARE: 'UpgradeBoxFirmware',
     DELETE_MASKED_ITEM: 'deletemaskeditemkey',
     FAST_RECOVERY: 'QueryFastRecoveryEventCount',
+    CONFIGURE_BOX: 'ConfigureBox',
 }
