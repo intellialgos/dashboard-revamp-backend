@@ -1,12 +1,23 @@
 import axiosInstance from "../../config/axios.js";
 import { ENDPOINTS } from "../../config/endpoints.js";
+import { sitesFilter } from "../../utils/siteFilter.js";
 
 export const eventsRoutes = async (app) => {
     app.post('/events', async (request, reply) => {
+      var sites_filter = await sitesFilter(request);
+
       try {
         const requestData = {
           msgType: "queryevents",
-          ...request?.body
+          ...( sites_filter ? { sites: sites_filter } : {} ),
+          ...( request?.body?.startTime ? { startTime: request?.body?.startTime } : {} ),
+          ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
+          ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+          ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
+          ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
+          ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+          ...( request?.body?.pageIndex ? { pageIndex: request?.body?.pageIndex } : {} ),
+          ...( request?.body?.pageSize ? { pageSize: request?.body?.pageSize } : {} ),
         };
         const response = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
           headers: {

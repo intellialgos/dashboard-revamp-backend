@@ -204,6 +204,25 @@ export const orgRoutes = async (app) => {
       }
     });
 
+    // Mask Item
+    app.post('/maskItem', async (request, reply) => {
+      try {
+        const requestData = {
+          msgType: ENDPOINTS.MASK_ITEM,
+          keyId: request?.body?.keyId
+        };
+        const response = await axiosInstance.post(`/${ENDPOINTS.MASK_ITEM}`, requestData, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        reply.send({data: response.data});
+      } catch (error) {
+        console.error(`[RESPONSE] Error: ${error.response?.data || error.message}`);
+        throw error;
+      }
+    });
+
     // Upgrade Box Firmware
     app.post('/upgradeBoxFirmware', async (request, reply) => {
       try {

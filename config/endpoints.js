@@ -17,6 +17,7 @@ export const ENDPOINTS = {
     GET_BOX_STATUS: 'GetBoxStatus',
     GET_IO_EVENTS: 'GetIoEventsText',
     GET_MASKED_ITEM: 'GetMaskedItemKey',
+    MASK_ITEM: 'PostMaskedItemKey',
     UPGRADE_BOX_FIRMWARE: 'UpgradeBoxFirmware',
     DELETE_MASKED_ITEM: 'deletemaskeditemkey',
     FAST_RECOVERY: 'QueryFastRecoveryEventCount',

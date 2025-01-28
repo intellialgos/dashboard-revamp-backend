@@ -20,7 +20,7 @@ await app.register(fastifyMultipart, {
 });
 
 // Register MySQL plugin
-await app.register(fastifyMysql, DB_CONFIG);
+// await app.register(fastifyMysql, DB_CONFIG);
 await app.register(middie);
 await app.register(fastifyCookie);
 await app.register(fastifySession, {
@@ -38,14 +38,10 @@ await app.register(fastifySession, {
 const allowedOriginis = [
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-  "http://94.207.250.168:3000",
-  "http://151.106.108.7:5000",
-  "https://151.106.108.7:5000",
-  "https://aec0371aa383.ngrok.app",
-  "https://3.6.115.64",
-  "http://94.202.132.68:3000",
-  "http://94.202.132.68",
-  "http://localhost:5001"
+  "http:// 86.98.85.100:3001",
+  "http:// 86.98.85.100",
+  "http:// 94.200.50.118",
+  "http:// 94.200.50.118:3001",
 ]
 
 // CORS

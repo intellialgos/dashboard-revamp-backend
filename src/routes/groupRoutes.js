@@ -8,7 +8,8 @@ export const groupRoutes = async (app) => {
         const requestData = {
           msgType: ENDPOINTS.POST_GROUP,
           name: request.body?.name,
-          orgId: request.body?.orgId,
+          ...(request.body?.orgId ? {orgId: request.body?.orgId} : {}),
+          ...(request.body?.id ? {id: request.body?.id} : {}),
           ...(request.body?.parentGroupId ? { parentGroupId: request.body.parentGroupId} : {} )
         };
         const response = await axiosInstance.post(`/${ENDPOINTS.POST_GROUP}`, requestData, {

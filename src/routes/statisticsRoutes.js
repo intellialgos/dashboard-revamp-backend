@@ -187,9 +187,10 @@ export const statisticsRoutes = async (app) => {
             .sort((a, b) => a.seconds - b.seconds) // Sort by duration in ascending order
             .slice(0, 10); // Take the top 10
 
-            const totalAlerts = allAlerts.data.data.totalCount;
+            const totalAlerts = allAlerts.data.data.event.length;
             const closedTickets = alerts.filter(event => event.process.status == 2 ).length;
 
+            data.totalCount = allAlerts.data.data.totalCount;
             data.totalAlarmsCount = totalAlerts;
             data.closedAlarmsCount = closedTickets;
             data.openAlarmsCount = totalAlerts-closedTickets;
