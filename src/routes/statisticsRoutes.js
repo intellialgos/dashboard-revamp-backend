@@ -327,16 +327,31 @@ export const statisticsRoutes = async (app) => {
           }
       });
 
-      // if ( allAlerts.data?.error == 0 ) {
-      //   const alerts = allAlerts.data.data.event || [];
-      //   const vendors = [];
-      //   const devices = [];
+      if ( allAlerts.data?.error == 0 ) {
+        const alerts = allAlerts.data.data.event || [];
+        const vendors = [];
+        const devices = [];
+        const eventTypes = [];
+        
+        alerts.map( alert => {
+          if (!devices.includes(alert.obj.name)) {
+            devices.push(alert.obj.name);
+          }
+          if ( !vendors.includes(alert.vendor) ) {
+            vendors.push(alert.vendor);
+          }
+          if ( !eventTypes.includes(alert.obj.key) ) {
+            eventTypes.push(alert.obj.key);
+          }
+        });
 
-      //   alerts.map( alert => {
-      //     vendors.push(alert.vendor);
-      //     devices.push(alert.vendor);
-      //   } );
-      // }
-      reply.send({data: data});
+        reply.send({data: {
+          vendors,
+          devices,
+          eventTypes
+        }});
+      }
+
+      reply.send({data: []});
   });
 }
