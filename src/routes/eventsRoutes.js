@@ -16,8 +16,10 @@ export const eventsRoutes = async (app) => {
           ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
           ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+          ...( request?.body?.devices ? { keyword: request?.body?.devices } : {} ),
           ...( request?.body?.pageIndex ? { pageIndex: request?.body?.pageIndex } : {} ),
           ...( request?.body?.pageSize ? { pageSize: request?.body?.pageSize } : {} ),
+          ...( request?.body?.processed ? { processed: request?.body?.processed } : {} ),
         };
         const response = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
           headers: {

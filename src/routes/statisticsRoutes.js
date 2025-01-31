@@ -2,6 +2,7 @@ import axiosInstance from "../../config/axios.js";
 import { ENDPOINTS } from "../../config/endpoints.js";
 // import { decodeBase64 } from "../../utils/base64.js";
 import { calculateDuration, convertDurationToSeconds } from "../../utils/calculateDuration.js";
+import { formatDate, getLast90DaysDate, getLastMonthDate, getLastWeekDate } from "../../utils/dates.js";
 import { sitesFilter } from "../../utils/siteFilter.js";
 // import { userFilter } from "../../utils/userFilter.js";
 
@@ -119,6 +120,68 @@ export const statisticsRoutes = async (app) => {
           })
         }
 
+        // DATES
+        const todayDate = formatDate(new Date());
+        const last30DaysDate = formatDate(getLastMonthDate(new Date()));
+        const last90DaysDate = formatDate(getLast90DaysDate(new Date()));
+        const last7DaysDate = formatDate(getLastWeekDate(new Date()));
+
+        // 90 Days offline
+        const last90DaysAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
+          msgType: "QueryEvents",
+          ...( sites_filter ? { sites: sites_filter } : {} ),
+          startTime: last90DaysDate,
+          endTime: todayDate,
+        }, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        if ( last90DaysAlerts.data?.error == 0 ) {
+          const alerts = last90DaysAlerts.data.data.event || [];
+          const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
+          data.notResponding90DaysAgo = aggregateByName(notRespondingItems);
+        }
+
+        // 30 Days offline
+        const monthlyAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
+          msgType: "QueryEvents",
+          ...( sites_filter ? { sites: sites_filter } : {} ),
+          startTime: last30DaysDate,
+          endTime: todayDate
+        }, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        if ( monthlyAlerts.data?.error == 0 ) {
+          const alerts = monthlyAlerts.data.data.event || [];
+          const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
+          data.notResponding30DaysAgo = aggregateByName(notRespondingItems);
+        }
+
+        // 7 Days offline
+        const weekAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
+          msgType: "QueryEvents",
+          ...( sites_filter ? { sites: sites_filter } : {} ),
+          startTime: last7DaysDate,
+          endTime: todayDate
+        }, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        if ( weekAlerts.data?.error == 0 ) {
+          const alerts = weekAlerts.data.data.event || [];
+          const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
+          data.notResponding7DaysAgo = aggregateByName(notRespondingItems);
+
+          const lastDay = new Date();
+          lastDay.setDate(lastDay.getDate() - 1);
+          data.notResponding24HourAgo = filterByTimeRange(data.notResponding24HourAgo, lastDay, new Date());
+
+        }
+
         // REQUEST ALL ALERTS
         const requestData = {
             msgType: "QueryEvents",
@@ -129,10 +192,6 @@ export const statisticsRoutes = async (app) => {
             ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
             ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
             ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
-            // orderBy: -1,
-            // pageSize: 10293,
-            // processed: 99
-            // keyword: 'CameraResponding'
         };
         const allAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
             headers: {
@@ -142,21 +201,7 @@ export const statisticsRoutes = async (app) => {
  
         if ( allAlerts.data?.error == 0 ) {
             const alerts = allAlerts.data.data.event || [];
-
             const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
-            // Last Week (7 Days)
-            const today = new Date(); // Current date and time
-            const sevenDaysAgo = new Date(); // Initialize with today
-            sevenDaysAgo.setDate(today.getDate() - 7);
-
-            // Last Day (24 Hours)
-            const lastDay = new Date();
-            lastDay.setDate(today.getDate() - 1);
-
-            // Last Month (30 Days)
-            const lastMonth = new Date();
-            lastMonth.setDate(today.getDate() - 30);
-
             // Rectified 7 Days Ago
             // filterByTimeRange(notRespondingItems, sevenDaysAgo, today)
             const rectifiedAlarms = notRespondingItems.filter( event => event.process?.status == 2 );
@@ -187,7 +232,7 @@ export const statisticsRoutes = async (app) => {
             .sort((a, b) => a.seconds - b.seconds) // Sort by duration in ascending order
             .slice(0, 10); // Take the top 10
 
-            const totalAlerts = allAlerts.data.data.event.length;
+            const totalAlerts = alerts.length;
             const closedTickets = alerts.filter(event => event.process.status == 2 ).length;
 
             data.totalCount = allAlerts.data.data.totalCount;
@@ -201,46 +246,47 @@ export const statisticsRoutes = async (app) => {
             data.response_time = response_time;
             data.sitesAlerts = aggregateBySite(alerts, sites);
             data.totalAssets = aggregateByName(alerts);
-            data.notRespondingTotal = aggregateByName(notRespondingItems);
-            data.notResponding30DaysAgo = filterByTimeRange(data.notRespondingTotal, lastMonth, today);
-            data.notResponding7DaysAgo = filterByTimeRange(data.notResponding30DaysAgo, sevenDaysAgo, today);
-            data.notResponding24HourAgo = filterByTimeRange(data.notResponding24HourAgo, lastDay, today);
+            // data.notRespondingTotal = aggregateByName(notRespondingItems);
+            // data.notResponding30DaysAgo = filterByTimeRange(data.notRespondingTotal, lastMonth, today);
+            // data.notResponding90Days = filterByTimeRange(data.notRespondingTotal, lastMonth, today);
+            // data.notResponding7DaysAgo = filterByTimeRange(data.notResponding30DaysAgo, sevenDaysAgo, today);
+            // data.notResponding24HourAgo = filterByTimeRange(data.notResponding24HourAgo, lastDay, today);
         }
 
         // REQUEST ALERTS WITH FILTERS
-        const requestFilteredData = {
-          msgType: "QueryEvents",
-          ...( sites_filter ? { sites: sites_filter } : {} ),
-          ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
-          ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
-          ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-          ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
-        };
-        const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
-          headers: {
-            ...request?.headers
-          }
-        });
-        if ( filteredAlerts.data?.error == 0 ) {
-          const alerts = filteredAlerts.data.data.event || [];
-          const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
-          // Last Week (7 Days)
-          const today = new Date(); // Current date and time
-          const sevenDaysAgo = new Date(); // Initialize with today
-          sevenDaysAgo.setDate(today.getDate() - 7);
+        // const requestFilteredData = {
+        //   msgType: "QueryEvents",
+        //   ...( sites_filter ? { sites: sites_filter } : {} ),
+        //   ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+        //   ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
+        //   ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
+        //   ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+        // };
+        // const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
+        //   headers: {
+        //     ...request?.headers
+        //   }
+        // });
+        // if ( filteredAlerts.data?.error == 0 ) {
+        //   const alerts = filteredAlerts.data.data.event || [];
+        //   const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
+        //   // Last Week (7 Days)
+        //   const today = new Date(); // Current date and time
+        //   const sevenDaysAgo = new Date(); // Initialize with today
+        //   sevenDaysAgo.setDate(today.getDate() - 7);
 
-          // Last Day (24 Hours)
-          const lastDay = new Date();
-          lastDay.setDate(today.getDate() - 1);
+        //   // Last Day (24 Hours)
+        //   const lastDay = new Date();
+        //   lastDay.setDate(today.getDate() - 1);
 
-          // Last Month (30 Days)
-          const lastMonth = new Date();
-          lastMonth.setDate(today.getDate() - 30);
-        }
+        //   // Last Month (30 Days)
+        //   const lastMonth = new Date();
+        //   lastMonth.setDate(today.getDate() - 30);
+        // }
 
         reply.send({data: data});
 
-    })
+    });
     app.post('/dashboardStats', async (request, reply) => {
       try {
         const requestData = {
@@ -268,5 +314,29 @@ export const statisticsRoutes = async (app) => {
         console.error(`[RESPONSE] Error: ${error.response?.data || error.message}`);
         throw error;
       }
-    })
+    });
+    app.post('/getFilters', async (request, reply) => {
+      var sites_filter = await sitesFilter(request);
+      const requestData = {
+        msgType: "QueryEvents",
+        ...( sites_filter ? { sites: sites_filter } : {} )
+      };
+      const allAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
+          headers: {
+            ...request?.headers
+          }
+      });
+
+      // if ( allAlerts.data?.error == 0 ) {
+      //   const alerts = allAlerts.data.data.event || [];
+      //   const vendors = [];
+      //   const devices = [];
+
+      //   alerts.map( alert => {
+      //     vendors.push(alert.vendor);
+      //     devices.push(alert.vendor);
+      //   } );
+      // }
+      reply.send({data: data});
+  });
 }

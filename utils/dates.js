@@ -4,6 +4,9 @@ export const getLastWeekDate = (date) => {
   export const getLastMonthDate = (date) => {
     return new Date(date.getFullYear(), date.getMonth() - 1, date.getDate());
   };
+  export const getLast90DaysDate = (date) => {
+    return new Date(date.getFullYear()-1, date.getMonth() - 3, date.getDate());
+  };
   export const getTodayDate = (date) => {
     return new Date(date.getFullYear(), date.getMonth(), date.getDate());
   };

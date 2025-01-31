@@ -260,4 +260,23 @@ export const orgRoutes = async (app) => {
         throw error;
       }
     });
+
+    // deletemaskeditemkey
+    app.post('/configureBox', async (request, reply) => {
+      try {
+        const requestData = {
+          msgType: ENDPOINTS.CONFIGURE_BOX,
+          ...request?.body
+        };
+        const response = await axiosInstance.post(`/${ENDPOINTS.CONFIGURE_BOX}`, requestData, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        reply.send({data: response.data});
+      } catch (error) {
+        console.error(`[RESPONSE] Error: ${error.response?.data || error.message}`);
+        throw error;
+      }
+    });
 }
