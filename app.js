@@ -20,7 +20,7 @@ await app.register(fastifyMultipart, {
 });
 
 // Register MySQL plugin
-// await app.register(fastifyMysql, DB_CONFIG);
+await app.register(fastifyMysql, DB_CONFIG);
 await app.register(middie);
 await app.register(fastifyCookie);
 await app.register(fastifySession, {

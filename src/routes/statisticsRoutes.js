@@ -54,46 +54,31 @@ function filterByTimeRange(array, startTime, endTime) {
         return itemTime >= start && itemTime <= end; // Check if it's within the range
     });
 }
-function aggregateByMonths(inputArray) {
-  const result = [];
+const groupByMonthAndPriority = (data) => {
+  const groupedData = data.reduce((acc, { timeEvent, level }) => {
+      const dateObj = new Date(timeEvent);
+      const monthYear = dateObj.toLocaleString("en-US", { month: "short", year: "numeric" }); // e.g., "Jan 2024"
 
-  inputArray.forEach((alarm) => {
-    const date = new Date(alarm.time);
-    const month = date.toLocaleString("default", { month: "short" });
-    const year = date.getFullYear();
-    const name = `${month} ${year}`; // Format as "Jan 2024"
+      // Determine priority based on level
+      let priority;
+      if ([0, 1].includes(level)) priority = "low";
+      else if ([2, 3].includes(level)) priority = "medium";
+      else if ([4, 5].includes(level)) priority = "high";
+      else return acc; // Skip invalid levels
 
-    // Determine the alarm levels
-    let low = 0,
-      medium = 0,
-      high = 0;
+      // Initialize month if not present
+      if (!acc[monthYear]) {
+          acc[monthYear] = { name: monthYear, low: 0, medium: 0, high: 0 };
+      }
 
-    if (alarm.level === 1 || alarm.level === 2) low = 1;
-    if (alarm.level === 2 || alarm.level === 3) medium = 1;
-    if (alarm.level === 4 || alarm.level === 5) high = 1;
+      // Increment the respective priority count
+      acc[monthYear][priority]++;
+      return acc;
+  }, {}); // Initialize accumulator as an empty object
 
-    // Check if the month-year already exists
-    const existing = result.find((item) => item.name === name);
-
-    if (existing) {
-      // Increment counts
-      existing.low += low;
-      existing.medium += medium;
-      existing.high += high;
-    } else {
-      // Add a new entry
-      result.push({
-        name,
-        low,
-        medium,
-        high,
-      });
-    }
-  });
-
-  return result;
-}
-
+  // Convert object to array
+  return Object.values(groupedData);
+};
 
 export const statisticsRoutes = async (app) => {
     app.post('/assetsStatistics', async (request, reply) => {
@@ -241,7 +226,6 @@ export const statisticsRoutes = async (app) => {
             data.openAlarmsCount = totalAlerts-closedTickets;
             data.successRate = (totalAlerts > 0) ? (closedTickets*100)/totalAlerts : 0;
             data.allAlerts = alerts;
-            data.allAlertsByMonths = aggregateByMonths(alerts);
             data.rectifications = rectifications;
             data.response_time = response_time;
             data.sitesAlerts = aggregateBySite(alerts, sites);
@@ -253,36 +237,24 @@ export const statisticsRoutes = async (app) => {
             // data.notResponding24HourAgo = filterByTimeRange(data.notResponding24HourAgo, lastDay, today);
         }
 
-        // REQUEST ALERTS WITH FILTERS
-        // const requestFilteredData = {
-        //   msgType: "QueryEvents",
-        //   ...( sites_filter ? { sites: sites_filter } : {} ),
-        //   ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
-        //   ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
-        //   ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-        //   ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
-        // };
-        // const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
-        //   headers: {
-        //     ...request?.headers
-        //   }
-        // });
-        // if ( filteredAlerts.data?.error == 0 ) {
-        //   const alerts = filteredAlerts.data.data.event || [];
-        //   const notRespondingItems = alerts.filter( event => event.obj.value == "Not Responding" );
-        //   // Last Week (7 Days)
-        //   const today = new Date(); // Current date and time
-        //   const sevenDaysAgo = new Date(); // Initialize with today
-        //   sevenDaysAgo.setDate(today.getDate() - 7);
-
-        //   // Last Day (24 Hours)
-        //   const lastDay = new Date();
-        //   lastDay.setDate(today.getDate() - 1);
-
-        //   // Last Month (30 Days)
-        //   const lastMonth = new Date();
-        //   lastMonth.setDate(today.getDate() - 30);
-        // }
+        // REQUEST ALERTS WITHOUT DATE FILTERS
+        const requestFilteredData = {
+          msgType: "QueryEvents",
+          ...( sites_filter ? { sites: sites_filter } : {} ),
+          ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+          ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
+          ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
+          ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+        };
+        const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
+          headers: {
+            ...request?.headers
+          }
+        });
+        if ( filteredAlerts.data?.error == 0 ) {
+          const alerts = filteredAlerts.data.data.event || [];
+          data.allAlertsByMonths = groupByMonthAndPriority(alerts);
+        }
 
         reply.send({data: data});
 
