@@ -5,6 +5,7 @@ import { sitesFilter } from "../../utils/siteFilter.js";
 export const orgRoutes = async (app) => {
     // Get Organizations & Sites & Groups
     app.post('/getOrganizations', async (request, reply) => {
+      var sites_filter = await sitesFilter(request);
       try {
         const requestData = {
           msgType: ENDPOINTS.GET_ORGANIZATIONS,
@@ -14,6 +15,7 @@ export const orgRoutes = async (app) => {
             ...request?.headers
           }
         });
+        
         reply.send({data: response.data});
       } catch (error) {
         console.error(`[RESPONSE] Error: ${error.response?.data || error.message}`);

@@ -115,8 +115,10 @@ export const statisticsRoutes = async (app) => {
         const last90DaysAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
+          ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           startTime: last90DaysDate,
           endTime: todayDate,
+          // keyword: "Not Responding"
         }, {
           headers: {
             ...request?.headers
@@ -132,8 +134,10 @@ export const statisticsRoutes = async (app) => {
         const monthlyAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
+          ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           startTime: last30DaysDate,
-          endTime: todayDate
+          endTime: todayDate,
+          // keyword: "Not Responding"
         }, {
           headers: {
             ...request?.headers
@@ -149,8 +153,10 @@ export const statisticsRoutes = async (app) => {
         const weekAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
+          ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           startTime: last7DaysDate,
-          endTime: todayDate
+          endTime: todayDate,
+          // keyword: "Not Responding"
         }, {
           headers: {
             ...request?.headers
@@ -173,7 +179,7 @@ export const statisticsRoutes = async (app) => {
             ...( sites_filter ? { sites: sites_filter } : {} ),
             ...( request?.body?.startTime ? { startTime: request?.body?.startTime } : {} ),
             ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
-            ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+            ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
             ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
             ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
             ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
@@ -241,7 +247,7 @@ export const statisticsRoutes = async (app) => {
         const requestFilteredData = {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
-          ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+          ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
           ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
@@ -289,6 +295,7 @@ export const statisticsRoutes = async (app) => {
     });
     app.post('/getFilters', async (request, reply) => {
       var sites_filter = await sitesFilter(request);
+      console.log("FITLERS SITES: ", sites_filter);
       const requestData = {
         msgType: "QueryEvents",
         ...( sites_filter ? { sites: sites_filter } : {} )

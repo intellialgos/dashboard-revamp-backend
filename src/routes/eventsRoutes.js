@@ -5,14 +5,13 @@ import { sitesFilter } from "../../utils/siteFilter.js";
 export const eventsRoutes = async (app) => {
     app.post('/events', async (request, reply) => {
       var sites_filter = await sitesFilter(request);
-
       try {
         const requestData = {
           msgType: "queryevents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( request?.body?.startTime ? { startTime: request?.body?.startTime } : {} ),
           ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
-          ...( request?.body?.sites ? { sites: request?.body?.sites } : {} ),
+          ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
           ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),

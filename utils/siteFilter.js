@@ -32,7 +32,7 @@ export async function sitesFilter( request ) {
     }
 
     if ( filters ) {
-        if ( filters.sites ) {
+        if ( filters.sites && filters.sites.length > 0 ) {
             sites = filters.sites;
         } else if (filters.organization) {
             var reqBody = {
@@ -44,12 +44,16 @@ export async function sitesFilter( request ) {
                     ...request?.headers
                 }
             });
-            if ( response?.data && response.data?.error == 0 ) {
+            if ( orgs?.data && orgs.data?.error == 0 ) {
                 const filtered_org = orgs.data.orgs.filter( org => org.id == filters.organization )
-                sites = filtered_org.sites;
+                if ( filtered_org.length > 0 && filtered_org[0].sites.length > 0 ) {
+                    sites = filtered_org[0].sites.map(site => site.id);
+                }
             }
         }
     }
+
+    console.log("SITESSS FILTERSSSSS123: ", sites);
     
     return sites;
 }
