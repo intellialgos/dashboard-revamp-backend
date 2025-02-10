@@ -111,6 +111,14 @@ export const statisticsRoutes = async (app) => {
         const last90DaysDate = formatDate(getLast90DaysDate(new Date()));
         const last7DaysDate = formatDate(getLastWeekDate(new Date()));
 
+        var filterKeyword = false;
+
+        if ( request?.body?.eventType ) {
+          filterKeyword = request?.body?.eventType;
+        } else if ( request?.body?.devices ) {
+          filterKeyword = request?.body?.devices;
+        }
+
         // 90 Days offline
         const last90DaysAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, {
           msgType: "QueryEvents",
@@ -182,7 +190,7 @@ export const statisticsRoutes = async (app) => {
             ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
             ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
             ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-            ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+            ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
         const allAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
             headers: {
@@ -250,7 +258,7 @@ export const statisticsRoutes = async (app) => {
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-          ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
+          ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
         const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
           headers: {
