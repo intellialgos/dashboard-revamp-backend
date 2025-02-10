@@ -5,10 +5,10 @@ import { sitesFilter } from "../../utils/siteFilter.js";
 export const eventsRoutes = async (app) => {
     app.post('/events', async (request, reply) => {
       var sites_filter = await sitesFilter(request);
-      var filtersVendors = [];
-      if ( request?.body?.vendors && request?.body?.vendors.length > 0 ) {
-        filtersVendors = request?.body?.vendors;
-      }
+      // var filtersVendors = [];
+      // if ( request?.body?.vendors && request?.body?.vendors.length > 0 ) {
+      //   filtersVendors = request?.body?.vendors;
+      // }
 
       try {
         const requestData = {
@@ -17,7 +17,7 @@ export const eventsRoutes = async (app) => {
           ...( request?.body?.startTime ? { startTime: request?.body?.startTime } : {} ),
           ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
-          ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
+          // ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
           ...( request?.body?.eventType ? { keyword: request?.body?.eventType } : {} ),
           ...( request?.body?.devices ? { keyword: request?.body?.devices } : {} ),
