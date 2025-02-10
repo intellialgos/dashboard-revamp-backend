@@ -91,6 +91,11 @@ export const statisticsRoutes = async (app) => {
         var sites = [];
         var sites_filter = await sitesFilter(request);
 
+        var filtersVendors = [];
+        if ( request?.body?.vendors && request?.body?.vendors.length > 0 ) {
+          filtersVendors = request?.body?.vendors;
+        }
+
         // REQUEST FOR ALL ORGANIZATIONS
         const response = await axiosInstance.post(`/${ENDPOINTS.GET_ORGANIZATIONS}`, reqBody, {
           headers: {
@@ -124,6 +129,7 @@ export const statisticsRoutes = async (app) => {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
+          ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
           startTime: last90DaysDate,
           endTime: todayDate,
           // keyword: "Not Responding"
@@ -143,6 +149,7 @@ export const statisticsRoutes = async (app) => {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
+          ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
           startTime: last30DaysDate,
           endTime: todayDate,
           // keyword: "Not Responding"
@@ -162,6 +169,7 @@ export const statisticsRoutes = async (app) => {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
+          ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
           startTime: last7DaysDate,
           endTime: todayDate,
           // keyword: "Not Responding"
@@ -188,7 +196,7 @@ export const statisticsRoutes = async (app) => {
             ...( request?.body?.startTime ? { startTime: request?.body?.startTime } : {} ),
             ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
             ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
-            ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
+            ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
             ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
             ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
@@ -256,7 +264,7 @@ export const statisticsRoutes = async (app) => {
           msgType: "QueryEvents",
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
-          ...( request?.body?.vendors ? { vendors: request?.body?.vendors } : {} ),
+          ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
           ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
           ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
@@ -316,7 +324,7 @@ export const statisticsRoutes = async (app) => {
 
       if ( allAlerts.data?.error == 0 ) {
         const alerts = allAlerts.data.data.event || [];
-        const vendors = [];
+        const vendors = ["Lenel", "Milestone"];
         const devices = [];
         const eventTypes = [];
         
@@ -324,9 +332,9 @@ export const statisticsRoutes = async (app) => {
           if (!devices.includes(alert.obj.name)) {
             devices.push(alert.obj.name);
           }
-          if ( !vendors.includes(alert.vendor) ) {
-            vendors.push(alert.vendor);
-          }
+          // if ( !vendors.includes(alert.vendor) && alert.vendor !== "Host" ) {
+          //   vendors.push(alert.vendor);
+          // }
           if ( !eventTypes.includes(alert.obj.key) ) {
             eventTypes.push(alert.obj.key);
           }
