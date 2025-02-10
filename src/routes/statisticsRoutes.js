@@ -197,8 +197,8 @@ export const statisticsRoutes = async (app) => {
             ...( request?.body?.endTime ? { endTime: request?.body?.endTime } : {} ),
             ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
             // ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
-            ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-            ...( filterKeyword ? { keyword: filterKeyword } : {} ),
+            // ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
+            // ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
         const allAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestData, {
             headers: {
@@ -265,8 +265,8 @@ export const statisticsRoutes = async (app) => {
           ...( sites_filter ? { sites: sites_filter } : {} ),
           ...( (request?.body?.sites && request?.body?.sites.length > 0) ? { sites: request?.body?.sites } : {} ),
           // ...( (filtersVendors.length > 0) ? { vendors: filtersVendors } : {} ),
-          ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
-          ...( filterKeyword ? { keyword: filterKeyword } : {} ),
+          // ...( request?.body?.priority ? { itemLevels: request?.body?.priority } : {itemLevels: [0,1,2,3,4,5]} ),
+          // ...( filterKeyword ? { keyword: filterKeyword } : {} ),
         };
         const filteredAlerts = await axiosInstance.post(`/${ENDPOINTS.QUERY_EVENTS}`, requestFilteredData, {
           headers: {
